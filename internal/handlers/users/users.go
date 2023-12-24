@@ -21,12 +21,16 @@ const (
 )
 
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	fmt.Printf("calling database.GetDB()\n")
 	db, err := database.GetDB()
 
+
 	if err != nil {
+		fmt.Printf("error to connect to DB\n")
 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, ListUsers))
 	}
 
+	fmt.Printf("to call users.List(db)\n")
 	users, err := users.List(db)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveUsers, ListUsers))
