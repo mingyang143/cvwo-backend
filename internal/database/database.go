@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -43,7 +44,7 @@ func (db *Database) AllUser() []models.User {
 	var users []models.User
 	
 	var (
-		id int
+		id int64
 		name string
 	)
 	for rows.Next() {
@@ -58,4 +59,34 @@ func (db *Database) AllUser() []models.User {
 		users = append(users, u)
 	}
 	return users
+}
+
+
+
+func (db *Database) AddUser(user models.User) (models.User, error) {
+	insertResult, err := db.db.ExecContext(context.Background(),"insert into users (username) values (?)", user.Name)
+	if err != nil {
+		fmt.Printf("failed to add users %s\n", err)
+		return models.User{}, err
+	}
+	id, err := insertResult.LastInsertId()
+	return models.User{
+		ID: id,
+		Name: user.Name,
+
+	}, nil
+}
+
+func (db *Database) IsValidUser(user models.User) (models.User,error) {
+	var id int64
+	if err := db.db.QueryRow("select id from users where username=?", user.Name).Scan(&id); err !=nil {
+		if err == sql.ErrNoRows {
+			return models.User{}, fmt.Errorf("no user found %s", user.Name)
+		} 
+		return models.User{}, fmt.Errorf("user is invalid %s", user.Name)
+	}
+	return models.User{
+		ID: id,
+		Name: user.Name,
+	}, nil
 }

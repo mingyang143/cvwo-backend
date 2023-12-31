@@ -1,8 +1,10 @@
 create table discussion(
     ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    USER varchar(255),
+    user_id int NOT NULL,
     TITLE varchar(255) NOT NULL,
-    CONTENT varchar(255)
+    CONTENT varchar(255) NOT NULL,
+    LIKES int NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(ID)
 );
 
 /*
@@ -17,10 +19,14 @@ create table comments(
     ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     comment varchar(255) NOT NULL,
     discussion_id int NOT NULL,
-     FOREIGN KEY (discussion_id) REFERENCES discussion(ID)
+    FOREIGN KEY (discussion_id) REFERENCES discussion(ID)
 );
 
 create table users(
     ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     USERNAME varchar(255) NOT NULL
 );
+
+
+
+
