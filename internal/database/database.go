@@ -121,10 +121,6 @@ func (db *Database) IsValidUser(user models.User) (models.User,error) {
 	}, nil
 }
 
-func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussion, error) {
-	//todo
-	return models.Discussion{}, nil
-}
 
 func (db *Database) EditDiscussion(discussion models.Discussion) (models.Discussion, error) {
 	
@@ -156,4 +152,10 @@ func (db *Database) EditDiscussion(discussion models.Discussion) (models.Discuss
 // 	return models.Discussion{
 		
 // 	}, nil
+// }
+
+
+// func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussion, error) {
+// 	//todo
+// 	return models.Discussion{}, nil
 // }

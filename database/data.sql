@@ -1,1 +1,1 @@
-insert into discussion (title, content, likes)
+insert into discussion (title, content, likes) 

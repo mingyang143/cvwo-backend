@@ -1,4 +1,9 @@
 # CVWO Assignment Sample Golang App
+SETUP
+Mysql database used.
+Create a user called "user1" with password as "password". Create a database called internerforum.
+Create tables.
+Tables used are in ./database/db.sql.
 
 This sample Golang app is provided to help you experiment and practice web development fundamentals.
 It shows how certain functionality can be implemented.
