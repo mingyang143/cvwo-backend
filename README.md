@@ -1,5 +1,4 @@
 # CVWO Assignment Sample Golang App
-SETUP
 Mysql database used.
 Create a user called "user1" with password as "password". Create a database called internerforum.
 Create tables.
