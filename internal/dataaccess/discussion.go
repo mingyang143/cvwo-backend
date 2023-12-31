@@ -24,3 +24,8 @@ func ListDiscussion(db *database.Database) ([]models.Discussion, error) {
 	
 	return discussion, nil
 }
+
+// func AddComment(db *database.Database, discussion models.Discussion) (models.Discussion, error) {
+// 	fmt.Printf("call add(db, discussion)\n")
+// 	return db.AddComment(discussion)
+// }

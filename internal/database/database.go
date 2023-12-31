@@ -143,3 +143,17 @@ func (db *Database) EditDiscussion(discussion models.Discussion) (models.Discuss
 
 	return discussion, nil
 }
+
+
+// func (db *Database) AddComment(discussion models.Discussion) (models.Discussion, error) {
+// 	insertResult, err := db.db.ExecContext(context.Background(),"insert into comments(comment, discussion_id) values(?)", discussion.ID, comment )
+// 	if err != nil {
+// 		fmt.Printf("failed to add comment %s\n", err)
+// 		return models.Discussion{}, err
+// 	}
+	
+// 	id, err := insertResult.LastInsertId()
+// 	return models.Discussion{
+		
+// 	}, nil
+// }

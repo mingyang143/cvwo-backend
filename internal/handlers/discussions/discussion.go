@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/CVWO/sample-go-app/internal/api"
-	users "github.com/CVWO/sample-go-app/internal/dataaccess"
+	discussions "github.com/CVWO/sample-go-app/internal/dataaccess"
 	"github.com/CVWO/sample-go-app/internal/database"
 	"github.com/CVWO/sample-go-app/internal/models"
 	"github.com/pkg/errors"
@@ -14,12 +14,12 @@ import (
 
 
 const (
-	ListUsers = "users.AccessUser"
+	Listdiscussions = "discussions.Accessdiscussion"
 
-	SuccessfulListUsersMessage = "Successfully listed users"
+	SuccessfulListdiscussionsMessage = "Successfully listed discussions"
 	ErrRetrieveDatabase        = "Failed to retrieve database in %s"
-	ErrRetrieveUsers           = "Failed to retrieve users in %s"
-	ErrEncodeView              = "Failed to retrieve users in %s"
+	ErrRetrievediscussions           = "Failed to retrieve discussions in %s"
+	ErrEncodeView              = "Failed to retrieve discussions in %s"
 )
 func AccessDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	fmt.Printf("calling database.GetDB()\n")
@@ -32,9 +32,9 @@ func AccessDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, er
 	}
 
 	fmt.Printf("to call discussion.List(db)\n")
-	discussion, err := users.ListDiscussion(db)
+	discussion, err := discussions.ListDiscussion(db)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveUsers, "GetDicussion"))
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "GetDicussion"))
 	}
 
 	data, err := json.Marshal(discussion)
@@ -46,7 +46,7 @@ func AccessDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, er
 		Payload: api.Payload{
 			Data: data,
 		},
-		Messages: []string{SuccessfulListUsersMessage},
+		Messages: []string{SuccessfulListdiscussionsMessage},
 	}, nil
 }
 
@@ -66,11 +66,11 @@ func Edit(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	var discussion models.Discussion
 	err = json.NewDecoder(r.Body).Decode(&discussion)
 	if err != nil {
-		fmt.Printf("Invalid input for add user")
+		fmt.Printf("Invalid input for add discussion")
 		return nil, errors.Wrap(err, fmt.Sprintf("Error to edit discussion %s", "editDiscussion"))
 	}
 
-	dis, err := users.EditDiscussion(db, discussion)
+	dis, err := discussions.EditDiscussion(db, discussion)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error to edit discussion %s", "editDiscussion"))
 	}
@@ -87,3 +87,42 @@ func Edit(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		Messages: []string{"Successfully edit the discussion"},
 	}, nil
 }
+
+
+
+// func AddComment(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+// 	fmt.Printf("calling database.GetDB()\n")
+// 	db, err := database.GetDB()
+
+
+// 	if err != nil {
+// 		fmt.Printf("error to connect to DB\n")
+// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
+// 	}
+
+// 	fmt.Printf("to call addComment(db)\n")
+
+// 	var discussion models.Discussion
+// 	err = json.NewDecoder(r.Body).Decode(&discussion)
+// 	if err != nil {
+// 		fmt.Printf("Invalid input for add discussion")
+// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
+// 	}
+
+// 	discussions, err := discussions.AddComment(db, discussion)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "addComment"))
+// 	}
+
+// 	data, err := json.Marshal(discussions)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrEncodeView, "addComment"))
+// 	}
+
+// 	return &api.Response{
+// 		Payload: api.Payload{
+// 			Data: data,
+// 		},
+// 		Messages: []string{SuccessfulListdiscussionsMessage},
+// 	}, nil
+// }

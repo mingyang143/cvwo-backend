@@ -36,14 +36,6 @@ func GetRoutes() func(r chi.Router) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
 		})
-		//add discusssion
-		r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
-			//TODO change the code below
-			response, _ := users.ValidUser(w, req)
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
-		})
 		// get all discussions
 		r.Get("/discussions", func(w http.ResponseWriter, req *http.Request) {
 			response, _ := discussions.AccessDiscussion(w, req)
@@ -51,15 +43,24 @@ func GetRoutes() func(r chi.Router) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
 		})
+		//add discusssion
+		// r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
+		// 	//TODO change the code below
+		// 	response, _ := users.ValidUser(w, req)
 
+		// 	w.Header().Set("Content-Type", "application/json")
+		// 	json.NewEncoder(w).Encode(response)
+		// })
 		//add comment
-		r.Put("/comment", func(w http.ResponseWriter, req *http.Request) {
-			//TODO change the function
-			response, _ := users.ValidUser(w, req)
+		// r.Put("/comment", func(w http.ResponseWriter, req *http.Request) {
+		// 	//TODO change the function
+		// 	response, _ := discussions.AddComment(w, req)
 
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
-		})
+		// 	w.Header().Set("Content-Type", "application/json")
+		// 	json.NewEncoder(w).Encode(response)
+		// })
+		//toggleLikes
+		
 	}
 }
 
