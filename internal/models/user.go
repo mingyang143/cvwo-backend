@@ -10,3 +10,5 @@ type User struct {
 func (user *User) Greet() string {
 	return fmt.Sprintf("Hello, I am %s", user.Name)
 }
+
+
