@@ -2,11 +2,11 @@ package models
 
 type Discussion struct {
 	ID   int64    `json:"id"`
-	UserId int64 	`json:"user_id"`
+	UserId int64 	`json:"userId"`
 	Title string `json:"title"`
 	Content string `json:"content"`
 	Likes int64 `json:"likes"`
-	Comments []string `json:"comments"`
+	Comments []Comment `json:"comments"`
 
 }
 

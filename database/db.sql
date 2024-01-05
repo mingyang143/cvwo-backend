@@ -24,7 +24,8 @@ create table comments(
 
 create table users(
     ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    USERNAME varchar(255) NOT NULL
+    USERNAME varchar(255) NOT NULL,
+    CONSTRAINT UN_USER_CONSTRAINT UNIQUE(USERNAME)
 );
 
 

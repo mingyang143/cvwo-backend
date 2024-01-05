@@ -42,7 +42,16 @@ func AddUser(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	users, err := users.Add(db, user)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveUsers, "Adduser"))
+		fmt.Printf("construct error response when fail to add new user\n")
+		return &api.Response{
+			Payload: api.Payload{
+				Data: json.RawMessage(err.Error()),
+
+			},
+			Messages: []string{"failed to create user"},
+			ErrorCode: 1,
+		},
+		errors.Wrap(err, fmt.Sprintf(ErrRetrieveUsers, "Adduser"))
 	}
 
 	data, err := json.Marshal(users)

@@ -51,7 +51,7 @@ func AccessDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, er
 }
 
 
-func Edit(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+func EditDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	fmt.Printf("calling database.GetDB()\n")
 	db, err := database.GetDB()
 
@@ -66,7 +66,7 @@ func Edit(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	var discussion models.Discussion
 	err = json.NewDecoder(r.Body).Decode(&discussion)
 	if err != nil {
-		fmt.Printf("Invalid input for add discussion")
+		fmt.Printf("Invalid input for edit discussion")
 		return nil, errors.Wrap(err, fmt.Sprintf("Error to edit discussion %s", "editDiscussion"))
 	}
 
@@ -90,39 +90,114 @@ func Edit(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 
 
-// func AddComment(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
-// 	fmt.Printf("calling database.GetDB()\n")
-// 	db, err := database.GetDB()
+func CreateDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	fmt.Printf("calling database.GetDB()\n")
+	db, err := database.GetDB()
 
 
-// 	if err != nil {
-// 		fmt.Printf("error to connect to DB\n")
-// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
-// 	}
+	if err != nil {
+		fmt.Printf("error to connect to DB\n")
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+	}
 
-// 	fmt.Printf("to call addComment(db)\n")
+	fmt.Printf("to call CreateDiscussion(db)\n")
 
-// 	var discussion models.Discussion
-// 	err = json.NewDecoder(r.Body).Decode(&discussion)
-// 	if err != nil {
-// 		fmt.Printf("Invalid input for add discussion")
-// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
-// 	}
+	var discussion models.Discussion
+	err = json.NewDecoder(r.Body).Decode(&discussion)
+	if err != nil {
+		fmt.Printf("Invalid input for CreateDiscussion")
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+	}
 
-// 	discussions, err := discussions.AddComment(db, discussion)
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "addComment"))
-// 	}
+	discussions, err := discussions.CreateDiscussion(db, discussion)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+	}
 
-// 	data, err := json.Marshal(discussions)
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, fmt.Sprintf(ErrEncodeView, "addComment"))
-// 	}
+	data, err := json.Marshal(discussions)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Failed to retrive discussion %s", "CreateDiscussion"))
+	}
 
-// 	return &api.Response{
-// 		Payload: api.Payload{
-// 			Data: data,
-// 		},
-// 		Messages: []string{SuccessfulListdiscussionsMessage},
-// 	}, nil
-// }
+	return &api.Response{
+		Payload: api.Payload{
+			Data: data,
+		},
+		Messages: []string{"successfully added a discussion"},
+	}, nil
+}
+
+
+func AddComment(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	fmt.Printf("calling database.GetDB()\n")
+	db, err := database.GetDB()
+
+
+	if err != nil {
+		fmt.Printf("error to connect to DB\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
+	}
+
+	fmt.Printf("to call addComment(db)\n")
+
+	var comment models.Comment
+	err = json.NewDecoder(r.Body).Decode(&comment)
+	if err != nil {
+		fmt.Printf("Invalid input for add comment\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
+	}
+
+	newComment, err := discussions.AddComment(db, comment)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "addComment"))
+	}
+
+	data, err := json.Marshal(newComment)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrEncodeView, "addComment"))
+	}
+
+	return &api.Response{
+		Payload: api.Payload{
+			Data: data,
+		},
+		Messages: []string{SuccessfulListdiscussionsMessage},
+	}, nil
+}
+
+type Likes struct {
+	DiscussionId int64 `json:"discussionId"`
+}
+
+func LikesInc(w http.ResponseWriter, r *http.Request)(*api.Response, error){
+	fmt.Printf("calling database.GetDB()\n")
+	db, err := database.GetDB()
+
+
+	if err != nil {
+		fmt.Printf("error to connect to DB\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "LikesInc"))
+	}
+
+	var likes Likes
+	err = json.NewDecoder(r.Body).Decode(&likes)
+	if err != nil {
+		fmt.Printf("Invalid input for LikesInc\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
+	}
+
+	fmt.Printf("to call IncreaseLikes(db)\n")
+
+	err = discussions.IncreaseLikes(db, likes.DiscussionId)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "LikesInc"))
+	}
+
+	
+	return &api.Response{
+		Payload: api.Payload{
+			Data: json.RawMessage{},
+		},
+		Messages: []string{"Successfully liked"},
+	}, nil
+}

@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/CVWO/sample-go-app/internal/handlers/discussions"
@@ -10,19 +12,25 @@ import (
 )
 
 func GetRoutes() func(r chi.Router) {
+	//add user
 	return func(r chi.Router) {
-		// r.Get("/comments", func(w http.ResponseWriter, req *http.Request) {
-		// 	response, _ := users.AccessUsers(w, req)
-
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	json.NewEncoder(w).Encode(response)
-		// })
 		r.Post("/users", func(w http.ResponseWriter, req *http.Request) {
-			user, _ := users.AddUser(w, req)
+			response, err := users.AddUser(w, req)
+
+			if err != nil {
+				fmt.Printf("error returned for add new user: %s\n", response.Payload.Data)
+				fmt.Printf("errorcode returned for add new user: %d\n", response.ErrorCode)
+				fmt.Printf("error message returned for add new user: %s\n", response.Messages[0])
+				b, _ := json.Marshal(response)
+				var prettyJSON bytes.Buffer
+				json.Indent(&prettyJSON, b, "  ", "\t")
+				fmt.Println(prettyJSON)
+			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(user)
+			json.NewEncoder(w).Encode(response)
 		})
+		//authenticate user
 		r.Get("/checkuser", func(w http.ResponseWriter, req *http.Request) {
 			response, _ := users.ValidUser(w, req)
 
@@ -31,7 +39,7 @@ func GetRoutes() func(r chi.Router) {
 		})
 		//edit discusssion
 		r.Post("/discussion", func(w http.ResponseWriter, req *http.Request) {
-			response, _ := discussions.Edit(w, req)
+			response, _ := discussions.EditDiscussion(w, req)
 
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
@@ -44,22 +52,27 @@ func GetRoutes() func(r chi.Router) {
 			json.NewEncoder(w).Encode(response)
 		})
 		//add discusssion
-		// r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
-		// 	//TODO change the code below
-		// 	response, _ := users.ValidUser(w, req)
-
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	json.NewEncoder(w).Encode(response)
-		// })
+		r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
+			//TODO change the code below
+			response, _ := discussions.CreateDiscussion(w, req)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(response)
+		})
 		//add comment
-		// r.Put("/comment", func(w http.ResponseWriter, req *http.Request) {
-		// 	//TODO change the function
-		// 	response, _ := discussions.AddComment(w, req)
+		r.Put("/comment", func(w http.ResponseWriter, req *http.Request) {
+			//TODO change the function
+			response, _ := discussions.AddComment(w, req)
 
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	json.NewEncoder(w).Encode(response)
-		// })
-		//toggleLikes
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(response)
+		})
+		//likes increase
+		r.Put("/likes", func(w http.ResponseWriter, req *http.Request) {
+			response, _ := discussions.LikesInc(w, req)
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(response)
+		})
 		
 	}
 }

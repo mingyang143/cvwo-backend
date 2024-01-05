@@ -30,10 +30,10 @@ func GetDB() (*Database, error) {
 }
 
 func (db *Database) Close() {
-	db.Close()
+	db.db.Close()
 }
 
-
+//ask dad how to change comment to a object and get the object from backend to react
 func (db *Database) AllDiscussion() []models.Discussion {
 	rows, err := db.db.Query("select id,user_id,title,content,likes from discussion")
 	if err != nil {
@@ -41,8 +41,8 @@ func (db *Database) AllDiscussion() []models.Discussion {
 	}
 	defer rows.Close()
 
-	var discussions []models.Discussion
-	var commentAll []string
+	var discussions = make([]models.Discussion,0) 
+	//var commentAll []string
 	var (
 		id int64
 		user_id int64
@@ -52,28 +52,34 @@ func (db *Database) AllDiscussion() []models.Discussion {
 		
 	)
 	for rows.Next() {
+		comments := make([]models.Comment, 0)
+		var discussion_id int64
+		var comment string
 		
 		err := rows.Scan(&id,&user_id,&title, &content,&likes)
 		if err != nil {
 			fmt.Printf("failed to retrieve discussion %s \n", err)
 		}
 		
-		rowComments, errComments := db.db.Query("select comment from comments where discussion_id=?", id)
+		rowComments, errComments := db.db.Query("select * from comments where discussion_id=?", id)
 		if errComments != nil {
 		fmt.Printf("failed to get comments %s\n", err)
 		}
 		defer rowComments.Close()
-		var(
-			comment string
-		)
+
 		for rowComments.Next(){
-			err := rowComments.Scan(&comment)
+			var commentId int64
+			err := rowComments.Scan(&commentId,&comment,&discussion_id)
 			if err != nil {
 				fmt.Printf("failed to retrieve comment %s \n", err)
 			}
-		commentAll = append(commentAll, comment)
+			c := models.Comment{
+				ID: commentId,
+				Comment: comment,
+				DiscussionId: discussion_id,
+			}
+			comments = append(comments, c)
 		}
-
 
 		p := models.Discussion{
 			ID: id,
@@ -81,7 +87,7 @@ func (db *Database) AllDiscussion() []models.Discussion {
 			Title: title,
 			Content: content,
 			Likes: likes,
-			Comments: commentAll,
+			Comments: comments,
 			
 
 		}
@@ -100,6 +106,11 @@ func (db *Database) AddUser(user models.User) (models.User, error) {
 	}
 	
 	id, err := insertResult.LastInsertId()
+
+	if err != nil {
+		fmt.Printf("failed to insert Users table %s\n", err)
+		return models.User{}, err
+	}
 	return models.User{
 		ID: id,
 		Name: user.Name,
@@ -123,6 +134,7 @@ func (db *Database) IsValidUser(user models.User) (models.User,error) {
 
 
 func (db *Database) EditDiscussion(discussion models.Discussion) (models.Discussion, error) {
+	fmt.Printf("discussion Id to be updated %d\n", discussion.ID)
 	
 	updateResult, err := db.db.ExecContext(context.Background(), "update discussion set title=?, content=? where id=?", 
 	discussion.Title, discussion.Content, discussion.ID)
@@ -137,25 +149,68 @@ func (db *Database) EditDiscussion(discussion models.Discussion) (models.Discuss
 	}
 	fmt.Printf("%d discussion updated\n", n);
 
-	return discussion, nil
+	return discussion,nil
 }
 
 
-// func (db *Database) AddComment(discussion models.Discussion) (models.Discussion, error) {
-// 	insertResult, err := db.db.ExecContext(context.Background(),"insert into comments(comment, discussion_id) values(?)", discussion.ID, comment )
-// 	if err != nil {
-// 		fmt.Printf("failed to add comment %s\n", err)
-// 		return models.Discussion{}, err
-// 	}
+func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussion, error) {
+	fmt.Printf("input for discussion %v\n", discussion)
+	fmt.Printf("userId for discussion %d\n", discussion.UserId)
+
+	insertResult, err := db.db.ExecContext(context.Background(),"insert into discussion (User_id, Title, Content, Likes) values (?,?,?,?)", discussion.UserId, discussion.Title, discussion.Content, discussion.Likes)
+	if err != nil {
+		fmt.Printf("failed to add discussion %s\n", err)
+	}
+
+	id, err := insertResult.LastInsertId()
+	if err != nil {
+		fmt.Printf("failed to insert Discussion table %s\n", err)
+		return models.Discussion{}, err
+	}
 	
-// 	id, err := insertResult.LastInsertId()
-// 	return models.Discussion{
-		
-// 	}, nil
-// }
+	return models.Discussion{
+		ID: id,
+		UserId: discussion.UserId,
+		Title: discussion.Title,
+		Content: discussion.Content,
+		Comments: make([]models.Comment,0),
+	}, nil
+}
 
 
-// func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussion, error) {
-// 	//todo
-// 	return models.Discussion{}, nil
-// }
+
+func (db *Database) AddComment(comment models.Comment) (models.Comment, error) {
+	insertResult, err := db.db.ExecContext(context.Background(),"insert into comments(comment, discussion_id) values(?,?)", comment.Comment, comment.DiscussionId )
+	if err != nil {
+		fmt.Printf("failed to add comment %s\n", err)
+		return models.Comment{}, err
+	}
+	
+	id, err := insertResult.LastInsertId()
+	if err != nil {
+		fmt.Printf("failed to insert comments table %s\n", err)
+		return models.Comment{}, err
+	}
+
+	return models.Comment{
+		ID: id,
+		Comment: comment.Comment,
+		DiscussionId: comment.DiscussionId,
+	}, nil
+}
+
+func (db *Database) IncreaseLikes(discussionId int64) error {
+	var likes int64
+	if err := db.db.QueryRow("select likes from discussion where id=?", discussionId).Scan(&likes); err !=nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("no dicussion found for id:%ds", discussionId)
+		} 
+		return fmt.Errorf("discussion id is invalid %d", discussionId)
+	}
+
+	_, err :=db.db.ExecContext(context.Background(), "update discussion set likes=? where id=?", likes + 1, discussionId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
