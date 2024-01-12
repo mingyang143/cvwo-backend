@@ -214,3 +214,20 @@ func (db *Database) IncreaseLikes(discussionId int64) error {
 	}
 	return nil
 }
+
+
+
+func (db *Database) DeleteDiscussion(discussionId int64) error {
+	_, err := db.db.ExecContext(context.Background(),"delete from comments where discussion_id=?",  discussionId )
+	if err != nil {
+		fmt.Printf("error: %s\n",err)
+		return fmt.Errorf("unable to delete comment for id:%ds", discussionId)
+	}
+	_, err = db.db.ExecContext(context.Background(),"delete from discussion where ID=?",  discussionId )
+	if err != nil {
+		fmt.Printf("error: %s\n",err)
+		return fmt.Errorf("unable to delete discussion for id:%ds", discussionId)
+	}
+	
+	return nil
+}

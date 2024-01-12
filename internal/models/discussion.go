@@ -10,3 +10,8 @@ type Discussion struct {
 
 }
 
+
+
+type DiscussionId struct {
+	DiscussionId int64 `json:"discussionId"`
+}

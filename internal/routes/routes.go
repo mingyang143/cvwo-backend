@@ -12,7 +12,7 @@ import (
 )
 
 func GetRoutes() func(r chi.Router) {
-	//add user
+	//create user
 	return func(r chi.Router) {
 		r.Post("/users", func(w http.ResponseWriter, req *http.Request) {
 			response, err := users.AddUser(w, req)
@@ -51,7 +51,7 @@ func GetRoutes() func(r chi.Router) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
 		})
-		//add discusssion
+		//add discussion(post)
 		r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
 			//TODO change the code below
 			response, _ := discussions.CreateDiscussion(w, req)
@@ -69,6 +69,13 @@ func GetRoutes() func(r chi.Router) {
 		//likes increase
 		r.Put("/likes", func(w http.ResponseWriter, req *http.Request) {
 			response, _ := discussions.LikesInc(w, req)
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(response)
+		})
+		//delete discussion
+		r.Delete("/discussion", func(w http.ResponseWriter, req *http.Request) {
+			response, _ := discussions.DeleteDiscussion(w, req)
 
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)

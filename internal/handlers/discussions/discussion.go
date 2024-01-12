@@ -165,9 +165,6 @@ func AddComment(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}, nil
 }
 
-type Likes struct {
-	DiscussionId int64 `json:"discussionId"`
-}
 
 func LikesInc(w http.ResponseWriter, r *http.Request)(*api.Response, error){
 	fmt.Printf("calling database.GetDB()\n")
@@ -179,8 +176,8 @@ func LikesInc(w http.ResponseWriter, r *http.Request)(*api.Response, error){
 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "LikesInc"))
 	}
 
-	var likes Likes
-	err = json.NewDecoder(r.Body).Decode(&likes)
+	var id models.DiscussionId
+	err = json.NewDecoder(r.Body).Decode(&id)
 	if err != nil {
 		fmt.Printf("Invalid input for LikesInc\n")
 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "addComment"))
@@ -188,7 +185,7 @@ func LikesInc(w http.ResponseWriter, r *http.Request)(*api.Response, error){
 
 	fmt.Printf("to call IncreaseLikes(db)\n")
 
-	err = discussions.IncreaseLikes(db, likes.DiscussionId)
+	err = discussions.IncreaseLikes(db, id.DiscussionId)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "LikesInc"))
 	}
@@ -201,3 +198,38 @@ func LikesInc(w http.ResponseWriter, r *http.Request)(*api.Response, error){
 		Messages: []string{"Successfully liked"},
 	}, nil
 }
+
+
+func DeleteDiscussion(w http.ResponseWriter, r *http.Request)(*api.Response, error){
+	fmt.Printf("calling database.GetDB()\n")
+	db, err := database.GetDB()
+
+
+	if err != nil {
+		fmt.Printf("error to connect to DB\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "DeleteDiscussion"))
+	}
+
+	var id models.DiscussionId
+	err = json.NewDecoder(r.Body).Decode(&id)
+	if err != nil {
+		fmt.Printf("Invalid input for DeleteDiscussion\n")
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrieveDatabase, "DeleteDiscussion"))
+	}
+
+	fmt.Printf("to call DeleteDiscussion(db)\n")
+
+	err = discussions.DeleteDiscussion(db, id.DiscussionId)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf(ErrRetrievediscussions, "DeleteDiscussion"))
+	}
+
+	
+	return &api.Response{
+		Payload: api.Payload{
+			Data: json.RawMessage{},
+		},
+		Messages: []string{"Successfully deleted"},
+	}, nil
+}
+

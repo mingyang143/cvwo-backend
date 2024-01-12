@@ -20,22 +20,23 @@ func ListDiscussion(db *database.Database) ([]models.Discussion, error) {
 	return discussion, nil
 }
 func CreateDiscussion(db *database.Database, discussion models.Discussion) (models.Discussion, error){
-	fmt.Printf("call CreateDiscussion()\n")
+	fmt.Printf("call AddDiscussion(discussion)\n")
 	
 	
 	return db.AddDiscussion(discussion)
 }
 
 func AddComment(db *database.Database, comment models.Comment) (models.Comment, error) {
-	fmt.Printf("call add(db, discussion)\n")
+	fmt.Printf("call AddComment(comment)\n")
 	return db.AddComment(comment)
 }
 
 func IncreaseLikes(db *database.Database, discussionId int64) error {
+	fmt.Printf("call IncreaseLikes(discussionId)\n")
 	return db.IncreaseLikes(discussionId)
 }
 
-// func AddDiscussion(db *database.Database, discussion models.Discussion) (models.Discussion, error) {
-// 	fmt.Printf("call add(db, discussion)\n")
-// 	return db.AddDiscussion(discussion)
-// }
+func DeleteDiscussion(db *database.Database, discussionId int64) error {
+	fmt.Printf("call DeleteDiscussion(discussionId)\n")
+	return db.DeleteDiscussion(discussionId)
+}
