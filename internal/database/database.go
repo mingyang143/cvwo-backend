@@ -33,7 +33,7 @@ func (db *Database) Close() {
 	db.db.Close()
 }
 
-//ask dad how to change comment to a object and get the object from backend to react
+
 func (db *Database) AllDiscussion() []models.Discussion {
 	rows, err := db.db.Query("select id,user_id,title,content,likes from discussion")
 	if err != nil {
@@ -157,7 +157,14 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 	fmt.Printf("input for discussion %v\n", discussion)
 	fmt.Printf("userId for discussion %d\n", discussion.UserId)
 
-	insertResult, err := db.db.ExecContext(context.Background(),"insert into discussion (User_id, Title, Content, Likes) values (?,?,?,?)", discussion.UserId, discussion.Title, discussion.Content, discussion.Likes)
+	ctx :=context.Background()
+	tx, err := db.db.BeginTx(ctx, nil)
+	if err != nil {
+		fmt.Printf("failed to begin TX %s\n", err)
+	}
+	defer tx.Rollback()
+	
+	insertResult, err := db.db.ExecContext(ctx,"insert into discussion (User_id, Title, Content, Likes) values (?,?,?,?)", discussion.UserId, discussion.Title, discussion.Content, discussion.Likes)
 	if err != nil {
 		fmt.Printf("failed to add discussion %s\n", err)
 	}
@@ -167,6 +174,56 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 		fmt.Printf("failed to insert Discussion table %s\n", err)
 		return models.Discussion{}, err
 	}
+
+	var (
+		tag_ids []int64
+	)
+	if len(discussion.Tags) > 0 {
+		for _, tag := range discussion.Tags {
+			rows, err := db.db.Query("select id from tags where tag = ?", tag)
+			if err != nil {
+				fmt.Printf("failed to select tag_id for tag %s, error: %s \n", tag, err)
+				return models.Discussion{}, err
+				
+			}
+			defer rows.Close()
+			
+			var tag_id int64
+			for rows.Next() {
+				tag_id = 0
+				err := rows.Scan(&tag_id)
+				if err != nil {
+					fmt.Printf("failed to retrieve tag_id %s \n", err)
+					return models.Discussion{}, err
+				}
+				tag_ids = append(tag_ids, tag_id)
+			}
+			if tag_id == 0 { // new tag
+				tagInsert, err := db.db.ExecContext(ctx, "insert into tags (tag) values (?)", tag)
+				if err != nil {
+					fmt.Printf("failed to add tag %s, error: %s\n", tag, err)
+					return models.Discussion{}, err
+				}
+				tag_id, err := tagInsert.LastInsertId()
+				if err != nil {
+					fmt.Printf("failed to get tag id for tag %s after insert, error: %s\n", tag, err)
+					return models.Discussion{}, err
+				}
+				tag_ids = append(tag_ids, tag_id)
+			}
+		}
+	}
+
+	for _, tag_id := range tag_ids {
+		_, err := db.db.ExecContext(ctx, "insert into dicussion_tag (tag_id, discussion_id) values (?,?)", tag_id, id)
+		if err != nil {
+			fmt.Printf("failed to insert dicussion_tag with tag_id %d and discussion_id %d, error: %s\n", tag_id, id, err)
+			return models.Discussion{}, err
+		}
+	}
+	if err = tx.Commit(); err != nil {
+        return models.Discussion{}, err
+    }
 	
 	return models.Discussion{
 		ID: id,
@@ -174,6 +231,7 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 		Title: discussion.Title,
 		Content: discussion.Content,
 		Comments: make([]models.Comment,0),
+		Tags: discussion.Tags,
 	}, nil
 }
 

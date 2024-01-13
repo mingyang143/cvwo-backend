@@ -1,31 +1,39 @@
 create table discussion(
-    ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id int NOT NULL,
-    TITLE varchar(255) NOT NULL,
-    CONTENT MEDIUMTEXT NOT NULL,
-    LIKES int NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(ID)
+    title varchar(255) NOT NULL,
+    content MEDIUMTEXT NOT NULL,
+    likes int NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-/*
-    ID int NOT NULL,
-    LastName varchar(255) NOT NULL,
-    FirstName varchar(255),
-    Age int,
-    PRIMARY KEY (ID,LastName)
-*/
-
 create table comments(
-    ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     comment MEDIUMTEXT NOT NULL,
     discussion_id int NOT NULL,
-    FOREIGN KEY (discussion_id) REFERENCES discussion(ID)
+    FOREIGN KEY (discussion_id) REFERENCES discussion(id)
 );
 
 create table users(
-    ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    USERNAME varchar(255) NOT NULL,
-    CONSTRAINT UN_USER_CONSTRAINT UNIQUE(USERNAME)
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username varchar(255) NOT NULL,
+    CONSTRAINT UN_USER_CONSTRAINT UNIQUE(username)
+);
+
+create table tags(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    tag varchar(255) NOT NULL,
+    CONSTRAINT UN_TAGS_CONSTRAINT UNIQUE(tag)
+);
+
+create table dicussion_tag(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    discussion_id int NOT NULL,
+    tag_id int NOT NULL,
+    FOREIGN KEY (discussion_id) REFERENCES discussion(id),
+    FOREIGN KEY (tag_id) REFERENCES tags(id),
+    CONSTRAINT UN_DISCUSSIONTAG_CONSTRAINT UNIQUE(discussion_id,tag_id)
+
 );
 
 
