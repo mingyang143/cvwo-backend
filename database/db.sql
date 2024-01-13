@@ -26,7 +26,7 @@ create table tags(
     CONSTRAINT UN_TAGS_CONSTRAINT UNIQUE(tag)
 );
 
-create table dicussion_tag(
+create table discussion_tags(
     id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     discussion_id int NOT NULL,
     tag_id int NOT NULL,

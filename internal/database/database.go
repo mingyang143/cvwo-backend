@@ -53,14 +53,16 @@ func (db *Database) AllDiscussion() []models.Discussion {
 	)
 	for rows.Next() {
 		comments := make([]models.Comment, 0)
+		tags := make([]string, 0)
 		var discussion_id int64
 		var comment string
+		var tag string 
 		
 		err := rows.Scan(&id,&user_id,&title, &content,&likes)
 		if err != nil {
 			fmt.Printf("failed to retrieve discussion %s \n", err)
 		}
-		
+		//selecting comments
 		rowComments, errComments := db.db.Query("select * from comments where discussion_id=?", id)
 		if errComments != nil {
 		fmt.Printf("failed to get comments %s\n", err)
@@ -80,6 +82,19 @@ func (db *Database) AllDiscussion() []models.Discussion {
 			}
 			comments = append(comments, c)
 		}
+		//selecting tags
+		rowTags, errTags := db.db.Query("select tag from tags t, discussion_tags dt where t.id = dt.tag_id and dt.discussion_id=?;", id)
+		if errTags != nil {
+			fmt.Printf("failed to get tags for discussion id=%d, error: %s\n", id, errTags)
+		}
+		defer rowTags.Close()
+		for rowTags.Next(){
+			err := rowTags.Scan(&tag)
+			if err != nil {
+				fmt.Printf("failed to retrieve tag %s \n", err)
+			}
+			tags = append(tags, tag)
+		}
 
 		p := models.Discussion{
 			ID: id,
@@ -88,6 +103,7 @@ func (db *Database) AllDiscussion() []models.Discussion {
 			Content: content,
 			Likes: likes,
 			Comments: comments,
+			Tags: tags,
 			
 
 		}
@@ -215,9 +231,9 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 	}
 
 	for _, tag_id := range tag_ids {
-		_, err := db.db.ExecContext(ctx, "insert into dicussion_tag (tag_id, discussion_id) values (?,?)", tag_id, id)
+		_, err := db.db.ExecContext(ctx, "insert into discussion_tags (tag_id, discussion_id) values (?,?)", tag_id, id)
 		if err != nil {
-			fmt.Printf("failed to insert dicussion_tag with tag_id %d and discussion_id %d, error: %s\n", tag_id, id, err)
+			fmt.Printf("failed to insert discussion_tags with tag_id %d and discussion_id %d, error: %s\n", tag_id, id, err)
 			return models.Discussion{}, err
 		}
 	}
@@ -281,11 +297,19 @@ func (db *Database) DeleteDiscussion(discussionId int64) error {
 		fmt.Printf("error: %s\n",err)
 		return fmt.Errorf("unable to delete comment for id:%ds", discussionId)
 	}
+	_, err = db.db.ExecContext(context.Background(),"delete from discussion_tags where discussion_id=?",  discussionId )
+	if err != nil {
+		fmt.Printf("error: %s\n",err)
+		return fmt.Errorf("unable to delete discussion_tags for id:%ds", discussionId)
+	}
 	_, err = db.db.ExecContext(context.Background(),"delete from discussion where ID=?",  discussionId )
 	if err != nil {
 		fmt.Printf("error: %s\n",err)
 		return fmt.Errorf("unable to delete discussion for id:%ds", discussionId)
 	}
+
 	
-	return nil
+
+	
+return nil
 }
