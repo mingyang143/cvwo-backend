@@ -53,10 +53,12 @@ func (db *Database) AllDiscussion() []models.Discussion {
 	)
 	for rows.Next() {
 		comments := make([]models.Comment, 0)
-		tags := make([]string, 0)
+		tags := make([]models.Tag, 0)
 		var discussion_id int64
 		var comment string
-		var tag string 
+		var tag models.Tag 
+		var tagName string
+		var tagId int64
 		
 		err := rows.Scan(&id,&user_id,&title, &content,&likes)
 		if err != nil {
@@ -83,15 +85,20 @@ func (db *Database) AllDiscussion() []models.Discussion {
 			comments = append(comments, c)
 		}
 		//selecting tags
-		rowTags, errTags := db.db.Query("select tag from tags t, discussion_tags dt where t.id = dt.tag_id and dt.discussion_id=?;", id)
+		rowTags, errTags := db.db.Query("select tag, t.id from tags t, discussion_tags dt where t.id = dt.tag_id and dt.discussion_id=?;", id)
 		if errTags != nil {
 			fmt.Printf("failed to get tags for discussion id=%d, error: %s\n", id, errTags)
 		}
 		defer rowTags.Close()
 		for rowTags.Next(){
-			err := rowTags.Scan(&tag)
+			err := rowTags.Scan(&tagName,&tagId)
 			if err != nil {
 				fmt.Printf("failed to retrieve tag %s \n", err)
+			}
+			tag=models.Tag{
+				Id: tagId,
+				Tag: tagName,
+				
 			}
 			tags = append(tags, tag)
 		}
@@ -192,13 +199,13 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 	}
 
 	var (
-		tag_ids []int64
+		tags []models.Tag
 	)
 	if len(discussion.Tags) > 0 {
 		for _, tag := range discussion.Tags {
-			rows, err := db.db.Query("select id from tags where tag = ?", tag)
+			rows, err := db.db.Query("select id from tags where tag = ?", tag.Tag)
 			if err != nil {
-				fmt.Printf("failed to select tag_id for tag %s, error: %s \n", tag, err)
+				fmt.Printf("failed to select tag_id for tag %s, error: %s \n", tag.Tag, err)
 				return models.Discussion{}, err
 				
 			}
@@ -212,28 +219,34 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 					fmt.Printf("failed to retrieve tag_id %s \n", err)
 					return models.Discussion{}, err
 				}
-				tag_ids = append(tag_ids, tag_id)
+				tags = append(tags, models.Tag{
+					Id: tag_id,
+					Tag: tag.Tag,
+				})
 			}
 			if tag_id == 0 { // new tag
-				tagInsert, err := db.db.ExecContext(ctx, "insert into tags (tag) values (?)", tag)
+				tagInsert, err := db.db.ExecContext(ctx, "insert into tags (tag) values (?)", tag.Tag)
 				if err != nil {
-					fmt.Printf("failed to add tag %s, error: %s\n", tag, err)
+					fmt.Printf("failed to add tag %s, error: %s\n", tag.Tag, err)
 					return models.Discussion{}, err
 				}
 				tag_id, err := tagInsert.LastInsertId()
 				if err != nil {
-					fmt.Printf("failed to get tag id for tag %s after insert, error: %s\n", tag, err)
+					fmt.Printf("failed to get tag id for tag %s after insert, error: %s\n", tag.Tag, err)
 					return models.Discussion{}, err
 				}
-				tag_ids = append(tag_ids, tag_id)
+				tags = append(tags, models.Tag{
+					Id: tag_id,
+					Tag: tag.Tag,
+				})
 			}
 		}
 	}
 
-	for _, tag_id := range tag_ids {
-		_, err := db.db.ExecContext(ctx, "insert into discussion_tags (tag_id, discussion_id) values (?,?)", tag_id, id)
+	for _, tag := range tags {
+		_, err := db.db.ExecContext(ctx, "insert into discussion_tags (tag_id, discussion_id) values (?,?)", tag.Id, id)
 		if err != nil {
-			fmt.Printf("failed to insert discussion_tags with tag_id %d and discussion_id %d, error: %s\n", tag_id, id, err)
+			fmt.Printf("failed to insert discussion_tags with tag_id %d and discussion_id %d, error: %s\n", tag.Id, id, err)
 			return models.Discussion{}, err
 		}
 	}
@@ -247,7 +260,7 @@ func (db *Database) AddDiscussion(discussion models.Discussion) (models.Discussi
 		Title: discussion.Title,
 		Content: discussion.Content,
 		Comments: make([]models.Comment,0),
-		Tags: discussion.Tags,
+		Tags: tags,
 	}, nil
 }
 

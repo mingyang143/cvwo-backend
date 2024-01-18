@@ -97,21 +97,22 @@ func CreateDiscussion(w http.ResponseWriter, r *http.Request) (*api.Response, er
 
 	if err != nil {
 		fmt.Printf("error to connect to DB\n")
-		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to create discussion %s", "CreateDiscussion"))
 	}
 
 	fmt.Printf("to call CreateDiscussion(db)\n")
 
 	var discussion models.Discussion
+
 	err = json.NewDecoder(r.Body).Decode(&discussion)
 	if err != nil {
-		fmt.Printf("Invalid input for CreateDiscussion")
-		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+		fmt.Printf("Invalid input for CreateDiscussion %s", err)
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to create discussion %s", "CreateDiscussion"))
 	}
 
 	discussions, err := discussions.CreateDiscussion(db, discussion)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Error to add discussion %s", "CreateDiscussion"))
+		return nil, errors.Wrap(err, fmt.Sprintf("Error to create discussion %s", "CreateDiscussion"))
 	}
 
 	data, err := json.Marshal(discussions)

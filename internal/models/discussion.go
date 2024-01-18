@@ -7,7 +7,7 @@ type Discussion struct {
 	Content string `json:"content"`
 	Likes int64 `json:"likes"`
 	Comments []Comment `json:"comments"`
-	Tags []string `json:"tags"`
+	Tags []Tag `json:"tags"`
 
 }
 
