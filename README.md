@@ -1,6 +1,6 @@
 # CVWO Assignment Sample Golang App
 1. Fork or clone the repo
-2. Open the root project directory in any code editor
+2. Open the project directory in any code editor
 3. Install Golang if not done so already at the following link: https://go.dev/doc/install
 4. Install MySQL by running "sudo apt install MySQL-server" on the terminal
 5. Check if MySQL is installed successfully by running "MySQL --version" to see the version number
