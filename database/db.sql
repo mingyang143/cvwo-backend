@@ -1,3 +1,9 @@
+create table users(
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username varchar(255) NOT NULL,
+    CONSTRAINT UN_USER_CONSTRAINT UNIQUE(username)
+);
+
 create table discussion(
     id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id int NOT NULL,
@@ -14,11 +20,6 @@ create table comments(
     FOREIGN KEY (discussion_id) REFERENCES discussion(id)
 );
 
-create table users(
-    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    username varchar(255) NOT NULL,
-    CONSTRAINT UN_USER_CONSTRAINT UNIQUE(username)
-);
 
 create table tags(
     id int NOT NULL AUTO_INCREMENT PRIMARY KEY,

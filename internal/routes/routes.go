@@ -51,7 +51,7 @@ func GetRoutes() func(r chi.Router) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(response)
 		})
-		//add discussion(post)
+		//add discussion/post
 		r.Put("/discussion", func(w http.ResponseWriter, req *http.Request) {
 			//TODO change the code below
 			response, _ := discussions.CreateDiscussion(w, req)

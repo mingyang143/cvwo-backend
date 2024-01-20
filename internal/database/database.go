@@ -15,7 +15,7 @@ type Database struct {
 
 func GetDB() (*Database, error) {
 	name := "mysql"
-	connectStr := "user1:password@tcp(localhost:3306)/internetforum"
+	connectStr := "user1:Pas$w0rd@tcp(localhost:3306)/internetforum"
 
 	db, err :=sql.Open(name, connectStr)
 	
