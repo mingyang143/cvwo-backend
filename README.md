@@ -1,4 +1,4 @@
-# CVWO Assignment Sample Golang App
+# CVWO Assignment Golang App
 1. Fork or clone the repo
 2. Open the project directory in any code editor
 3. Install Golang if not done so already at the following link: https://go.dev/doc/install
